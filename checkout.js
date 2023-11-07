@@ -12,12 +12,28 @@ const products = document.querySelector(".products")
 deleteProducts.addEventListener("click",()=>{
     if(confirm("emin misiniz?")){
         noProductPrint()
+        calculateTotalPrice()
     }
 })
 
 
 products.addEventListener("click",(e)=>{
-    
+    if(e.target.classList.contains("fa-plus")){
+        e.target.previousElementSibling.textContent++
+        calculateProductPrice(e.target)
+    }else if (e.target.classList.contains("fa-minus")) {
+
+        e.target.nextElementSibling.innerText>1 && 
+        e.target.nextElementSibling.innerText--
+        calculateProductPrice(e.target)
+    }else if (e.target.classList.contains("fa-trash-can")) {
+        e.target.closest(".product").remove()
+         calculateProductPrice(e.target) //?calculateTotalPrice() da olabilir               
+    }
+})
+
+window.addEventListener("load", () => {
+    calculateTotalPrice()
 })
 
 
@@ -33,4 +49,35 @@ const noProductPrint = ()=>{
     document.querySelector(".delete-div").style.display = "none"
 }
 
+
+const calculateProductPrice = (button) => {
+    const quantity = button.closest(".buttons-div").querySelector("#quantity").textContent 
+    const discountedPrice = button.closest(".product").querySelector("#discounted-price").textContent
+    const productPrice = button.closest(".buttons-div").querySelector("#product-price")
+    productPrice.textContent = (discountedPrice*quantity).toFixed(2)
+    calculateTotalPrice()
+}
+
+
+
+
+ //! Hesaplanan degerlerin DOM'a basilmasi
+
+const calculateTotalPrice = ()=>{
+    const price = document.querySelectorAll("#product-price")
+    const reducedTotal = [...price].reduce((sum,prc)=>sum + Number(prc.textContent),0)
+    document.getElementById("selected-price").textContent = reducedTotal.toFixed(2)
+  
+   const shippingPrice = reducedTotal>FREE_SHIPPING_LIMIT || reducedTotal=== 0 ? 0 : SHIPPING_PRICE
+   document.getElementById("shipping").textContent = shippingPrice.toFixed(2)
+
+   const taxPrice = reducedTotal * TAX_RATE
+   document.getElementById("tax").textContent = taxPrice.toFixed(2)
+
+   const totalPrice = reducedTotal + shippingPrice + taxPrice
+   document.getElementById("total").textContent = totalPrice.toFixed(2)
+
+   !totalPrice && noProductPrint()
+  
+  }
 
